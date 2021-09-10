@@ -9,25 +9,29 @@ use App\Course;
 use App\Lecturer;
 use App\Student;
 use App\Qr_code;
+
 class LecturersController extends Controller
 
 {
 
-	public function __construct(){
+    public function __construct()
+    {
+    }
 
-	}
-
-    public function dashboard(){
-    	return view('dashboard');
+    public function dashboard()
+    {
+        return view('dashboard');
     }
 
 
-    public function login_page(){
+    public function login_page()
+    {
 
-    	return view('login');
+        return view('login');
     }
 
-    public function logout (){
+    public function logout()
+    {
         Auth::logout();
         return redirect("/");
     }
@@ -36,98 +40,114 @@ class LecturersController extends Controller
 
 
 
-       // Login Script
-       public function login(Request $r){
-	  	 $messages =['email.required'=> 'Email is required',
-	              'password.required' =>'Password is required']; //error messages to be displayed
+    // Login Script
+    public function login(Request $r)
+    {
+        $messages = [
+            'email.required' => 'Email is required',
+            'password.required' => 'Password is required'
+        ]; //error messages to be displayed
 
-        	$this->validate($r,
-      		[
-      		  'email' => 'required|email',
-      		  'password' => 'required|alpha_num|max:10',
-      		], $messages);
+        $this->validate(
+            $r,
+            [
+                'email' => 'required|email',
+                'password' => 'required|alpha_num|max:10',
+            ],
+            $messages
+        );
 
-    		  $credentials = $r->only('email','password');
-    	    if(Auth::attempt($credentials)){
+        $credentials = $r->only('email', 'password');
+        if (Auth::attempt($credentials)) {
 
-          // Authentication passed, lecturer is now logged in
-	      	return redirect()->intended('dashboard');
-	      } else {
-	      	return back()->with('error','Incorrect email or password');
-	    }
-
+            // Authentication passed, lecturer is now logged in
+            return redirect()->intended('dashboard');
+        } else {
+            return back()->with('error', 'Incorrect email or password');
+        }
     }
 
 
-  				// $user = User::where('email', $r->email)->first();
-  				// if(!$lecturer)
-  				// 	return back()->with('Failed', 'Incorrect email or password');
-  				// if(Hash::check($r->password, $lecturer->password)) {
-  				// 	Auth::login($lecturer);
-  				// 	return redirect()->intended('dashboard');
-  				// }
-  				// else
-  				// 	return back()->with('Failed', 'Incorrect email or password');
+    // $user = User::where('email', $r->email)->first();
+    // if(!$lecturer)
+    // 	return back()->with('Failed', 'Incorrect email or password');
+    // if(Hash::check($r->password, $lecturer->password)) {
+    // 	Auth::login($lecturer);
+    // 	return redirect()->intended('dashboard');
+    // }
+    // else
+    // 	return back()->with('Failed', 'Incorrect email or password');
 
-        public function addCourses(Request $r){
+    public function addCourses(Request $r)
+    {
         $user = Auth()->user()->id;
-        $lecturer = Lecturer::where('user_id',$user)->get('id');
+        $lecturer = Lecturer::where('user_id', $user)->get('id');
         $lecturer_id = $lecturer[0]['id'];
-      	$messages =['course_code.required'=> 'Course Code is required and should be in alpha numeric',
-              		'course_name.required' =>'Course Name is required']; //error messages to be displayed
+        $messages = [
+            'course_code.required' => 'Course Code is required and should be in alpha numeric',
+            'course_name.required' => 'Course Name is required'
+        ]; //error messages to be displayed
 
-                   $this->validate($r,
-       		           [
-                     'course_code' => 'required',
-                      'course_name' => 'required',
-       		           ], $messages);
+        $this->validate(
+            $r,
+            [
+                'course_code' => 'required',
+                'course_name' => 'required',
+            ],
+            $messages
+        );
 
-	     // inserting the course details into the courses table
-           	for($i=0; $i<count($r->course_code); $i++) {
-           		Course::create([
-           			'lecturer_id' => $lecturer_id,
-           			'course_code' => $r->course_code[$i],
-           			'course_name' => $r->course_name[$i]
-           		]);
-       	}
+        // inserting the course details into the courses table
+        for ($i = 0; $i < count($r->course_code); $i++) {
+            Course::create([
+                'lecturer_id' => $lecturer_id,
+                'course_code' => $r->course_code[$i],
+                'course_name' => $r->course_name[$i]
+            ]);
+        }
 
 
         // $course = Course::create([
-       	// 	'user_id' => Auth::id(),
-       	// 	'course_code' => json_encode($r['course_code']),
-       	// 	'course_name' => json_encode($r['course_name']),
+        // 	'user_id' => Auth::id(),
+        // 	'course_code' => json_encode($r['course_code']),
+        // 	'course_name' => json_encode($r['course_name']),
 
-       	// ]);
+        // ]);
 
         return back()->with('message', 'Course Added Successfuly');
     }
 
-        public function showCourses(Request $r){
-       		$lecturer = Auth::user()->lecturer;
-          $courses = $lecturer->courses()->orderBy('created_at', 'desc')->get();
-    	  	return view('added_courses',compact("courses"));
-       	}
+    public function showCourses(Request $r)
+    {
+        $lecturer = Auth::user()->lecturer;
+        $courses = $lecturer->courses()->orderBy('created_at', 'desc')->get();
+        return view('added_courses', compact("courses"));
+    }
 
     //    deleting a course
-        public function destroy($id){
-               $course = Course::where('id',$id)->first();
-               $course->delete();
-               return back()->with('success', "Course deleted Successfuly");
-       }
+    public function destroy($id)
+    {
+        $course = Course::where('id', $id)->first();
+        $course->delete();
+        return back()->with('success', "Course deleted Successfuly");
+    }
 
     // show the details of the number of students registered
-       public function showStudent(){
-           $students = Student::with('user')->get();
-           return view('students',compact("students"));
-         }
+    public function showStudent()
+    {
+        $students = Student::with('user')->get();
+        return view('students', compact("students"));
+    }
 
-      public function showcodeform(){
+    public function showcodeform()
+    {
         $courses = Auth::user()->lecturer->courses()->orderBy('created_at', 'desc')->get();
         return view('qrcodes.list', compact('courses'));
     }
 
 
-    public function generateCode(Request $r){
+    public function generateCode(Request $r)
+    {
 
         // return $r->all();
 
@@ -140,21 +160,23 @@ class LecturersController extends Controller
 
         $lecturer = Auth::user()->lecturer;
 
-        $name = uniqid().".png";
+        $name = uniqid() . ".png";
 
-        $id = Qr_code::all()->last()->id;
+        $last = Qr_code::all()->last();
 
-        QrCode::format('png')->size(400)->generate((string)++$id, '../public/images/codes/'.$name);
+        $id = $last ? $last->id : 0;
+
+        QrCode::format('png')->size(400)->generate((string)++$id, '../public/images/codes/' . $name);
 
         Qr_code::create([
-        'lecturer_id' => $lecturer->id,
-        'image'       => $name,
-        'course_id'   => $r['course_code'],
-        'time' =>  $r['time']
+            'lecturer_id' => $lecturer->id,
+            'image'       => $name,
+            'course_id'   => $r['course_code'],
+            'time' =>  $r['time']
         ]);
 
 
-       return redirect('dashboard/qr-code');
+        return redirect('dashboard/qr-code');
     }
 
     /**
@@ -162,17 +184,19 @@ class LecturersController extends Controller
      *
      * @return Object
      */
-    public function listQrCodes() {
+    public function listQrCodes()
+    {
 
         $qr_codes = auth()->user()->lecturer->qr_codes()->orderBy('created_at', 'desc')->get();
-        return view('qrcodes.generated',compact('qr_codes'));
+        return view('qrcodes.generated', compact('qr_codes'));
     }
 
     /**
      *show generated qr code
      *
      */
-    public function showGeneratedCode() {
+    public function showGeneratedCode()
+    {
 
         $code = auth()->user()->lecturer->qr_codes()->get()->last();
 
@@ -180,23 +204,17 @@ class LecturersController extends Controller
     }
 
 
-    public function showStudents($id) {
+    public function showStudents($id)
+    {
 
         $code = Qr_code::find($id);
 
-        if(!$code) {
+        if (!$code) {
             return back()->with('error', 'qr code not found');
         }
 
         $records = $code->records()->present()->get();
 
         return view('qrcodes.students', compact('records', 'code'));
-
-
     }
-
-
-
-
 }
-
