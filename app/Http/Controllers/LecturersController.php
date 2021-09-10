@@ -153,7 +153,7 @@ class LecturersController extends Controller
 
         $this->validate($r, [
             'time' => 'required|date_format:H:i',
-            'course_code' => 'required|exists:qr_codes,id'
+            'course_code' => 'required|exists:courses,id'
         ]);
 
 
