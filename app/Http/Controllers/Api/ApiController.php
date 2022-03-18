@@ -72,7 +72,15 @@ class ApiController extends Controller
         }
 
         if (Auth::attempt(['email' => $r['email'], 'password' => $r['password']])) {
-            return $this->results(['message' => 'login success', 'data' => new AuthResource(auth()->user())]);
+		
+	    $user = auth()->user();
+
+            if($user->role_id == 1) {
+		return $this->results(['message' => 'login success', 'data' => new AuthResource(auth()->user())]);
+            } 
+
+
+            
         }
 
         return $this->results(['message' => 'invalid credentials', 'data' => null], Response::HTTP_UNAUTHORIZED);
