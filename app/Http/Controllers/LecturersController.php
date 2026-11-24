@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use QrCode;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Course;
 use App\Lecturer;
 use App\Student;
@@ -91,8 +91,10 @@ class LecturersController extends Controller
         $this->validate(
             $r,
             [
-                'course_code' => 'required',
-                'course_name' => 'required',
+                'course_code' => 'required|array|min:1',
+                'course_code.*' => 'required|string',
+                'course_name' => 'required|array|size:' . count((array) $r->input('course_code', [])),
+                'course_name.*' => 'required|string',
             ],
             $messages
         );
@@ -160,13 +162,19 @@ class LecturersController extends Controller
 
         $lecturer = Auth::user()->lecturer;
 
-        $name = uniqid() . ".png";
+        // SVG output needs no imagick extension (simple-qrcode 4 requires imagick for PNG).
+        $name = uniqid() . ".svg";
 
         $last = Qr_code::all()->last();
 
         $id = $last ? $last->id : 0;
 
-        QrCode::format('png')->size(400)->generate((string)++$id, '../public/images/codes/' . $name);
+        $dir = public_path('images/codes');
+        if (! is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
+        QrCode::format('svg')->size(400)->generate((string) ++$id, $dir . DIRECTORY_SEPARATOR . $name);
 
         Qr_code::create([
             'lecturer_id' => $lecturer->id,
