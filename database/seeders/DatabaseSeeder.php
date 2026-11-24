@@ -1,5 +1,7 @@
 <?php
 
+namespace Database\Seeders;
+
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -7,18 +9,12 @@ class DatabaseSeeder extends Seeder
 {
     /**
      * Seed the application's database.
-     *
-     * @return void
      */
-    public function run()
+    public function run(): void
     {
-        // $this->call(UsersTableSeeder::class);
-
         DB::table('roles')->insert([
-        	['name' => 'Student'],
-        	['name' => "Lecturer"],
-
-
+            ['name' => 'Student'],
+            ['name' => 'Lecturer'],
         ]);
     }
 }
